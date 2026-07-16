@@ -1,8 +1,9 @@
 from ursina import *
-from ursina.prefabs.first_person_controller import FirstPersonController
+
 
 app = Ursina()
 
+created_chucks = []
 Player = Entity(
     model="quad",
     texture='tex/up.png', 
@@ -10,11 +11,29 @@ Player = Entity(
     collider="box"
 )
 
-def update():
-    Player.x += (held_keys['d'] )*time.dt*5
-    Player.y += (held_keys['w'] )*time.dt*5
-    Player.x -= (held_keys['a'] )*time.dt*5
-    Player.y -= (held_keys['s'] )*time.dt*5
+camera.add_script(SmoothFollow(target=Player,offset=(0,0,-20),speed=4))
+
+def stone(x,y):
+ pos = (x,y)
+ Entity(
+    model="quad",
+    color=color.white,
+    collider="box",
+    position=pos,
+    scale=(1/3,1/3),
+    texture= 'tex/stone.jpg'
+)
+
+def chuck(x,y):
+    for _x in range(6):
+        __x = x + _x*(1/3)
+        for _y in range(6):
+            __y = y + _y*(1/3)
+            stone(__x,__y)
+            created_chucks.append((__x,__y))
+
+
+chuck(1,1)
 
 def input(key):
     move = 5*time.dt
@@ -31,4 +50,8 @@ def input(key):
         Player.x -= move
         Player.texture = 'tex/left.png'
 
+def update():
+    if Player.intersects():
+        Player.x -= 0.05
+        Player.y -=0.05
 app.run()
