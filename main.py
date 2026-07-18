@@ -113,13 +113,31 @@ def redstone(x,y):
 
    )
 
+blks = [stone,
+        adersite,
+        granite,
+        coal,
+        copper,
+        iron,
+        redstone,
+        gold,
+        emerald]
+p = [60,
+     10,
+     10,
+     8,
+     5,
+     4,
+     1.5,
+     1,
+     0.5]
 
 def chuck(x,y):
     for _x in range(6):
         __x = x + _x*(1/3)
         for _y in range(6):
             __y = y + _y*(1/3)
-            stone(__x,__y)
+            random.choices(blks,weights=p,k=1)[0](__x,__y)
             created_blk.append((__x,__y))
 
 
