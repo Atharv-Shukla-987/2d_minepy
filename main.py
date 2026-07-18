@@ -1,9 +1,9 @@
 from ursina import *
-
+import random
 
 app = Ursina()
 
-created_chucks = []
+created_blk = []
 Player = Entity(
     model="quad",
     texture='tex/up.png', 
@@ -23,6 +23,96 @@ def stone(x,y):
     scale=(1/3,1/3),
     texture= 'tex/stone.jpg'
 )
+ 
+def adersite(x,y):
+ pos = (x,y)
+ Entity(
+    model="quad",
+    color=color.white,
+    collider="box",
+    position=pos,
+    scale=(1/3,1/3),
+    texture= 'tex/andesite.png'
+)
+ 
+def granite(x,y):
+ pos = (x,y)
+ Entity(
+    model="quad",
+    color=color.white,
+    collider="box",
+    position=pos,
+    scale=(1/3,1/3),
+    texture= 'tex/granite.jpg'
+)
+ 
+def coal(x,y):
+ pos = (x,y)
+ Entity(
+    model="quad",
+    color=color.white,
+    collider="box",
+    position=pos,
+    scale=(1/3,1/3),
+    texture= 'tex/coal_ore.png'
+)
+ 
+def copper(x,y):
+ pos = (x,y)
+ Entity(
+    model="quad",
+    color=color.white,
+    collider="box",
+    position=pos,
+    scale=(1/3,1/3),
+    texture= 'tex/copper_ore.jpg'
+)
+ 
+def emerald(x,y):
+ pos = (x,y)
+ Entity(
+    model="quad",
+    color=color.white,
+    collider="box",
+    position=pos,
+    scale=(1/3,1/3),
+    texture= 'tex\emerald_ore.jpg'
+)
+ 
+def gold(x,y):
+ pos = (x,y)
+ Entity(
+    model="quad",
+    color=color.white,
+    collider="box",
+    position=pos,
+    scale=(1/3,1/3),
+    texture= 'tex/gold_ore.jpg'
+)
+ 
+def iron(x,y):
+ pos = (x,y)
+ Entity(
+    model="quad",
+    color=color.white,
+    collider="box",
+    position=pos,
+    scale=(1/3,1/3),
+    texture= 'tex/iron_ore.png'
+)
+ 
+def redstone(x,y):
+   pos = (x,y)
+   Entity(
+      model="quad",
+      color=color.color
+      ,collider="box",
+      position=pos,
+      scale=(1/3,1/3),
+      texture='tex/redstone_ore.jpg'
+
+   )
+
 
 def chuck(x,y):
     for _x in range(6):
@@ -30,7 +120,7 @@ def chuck(x,y):
         for _y in range(6):
             __y = y + _y*(1/3)
             stone(__x,__y)
-            created_chucks.append((__x,__y))
+            created_blk.append((__x,__y))
 
 
 chuck(1,1)
