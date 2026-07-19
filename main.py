@@ -161,8 +161,9 @@ def chuck(x,y):
                continue
             
             if (__x,__y) not in blocks:
-               blocks[(__x,__y)] = random.choices(blks,weights=p,k=1)[0](__x,__y)
-               
+               e = random.choices(blks,weights=p,k=1)[0](__x,__y)
+               e.grid_pos = (__x,__y)
+               blocks[(__x,__y)] = e  
                 
 
 
@@ -237,25 +238,18 @@ def input(key):
            Player.x -= move
         Player.texture = 'tex/left.png'
         facing = (-1,0)
-    if key == "e":
-       tx , ty = round(Player.x) + facing[0] , round(1+Player.y - foot_offset)
-       if (tx,ty) in blocks:
-          destroy(blocks[(tx,ty)])
-          del blocks[(tx,ty)]
-          removed.append((tx,ty))
-    
-    if key == "r":
-       tx , ty = round(Player.x) + facing[0] , round(Player.y - foot_offset)
-       if (tx,ty) in blocks:
-          destroy(blocks[(tx,ty)])
-          del blocks[(tx,ty)]
-          removed.append((tx,ty))
+    if key == "left mouse down":
+       hit = mouse.hovered_entity
+       if hit and hasattr(hit,"grid_pos"):
+          hx , hy = hit.grid_pos
+          dist = ((hx-Player.x)**2 + (hy - Player.y)**2)**0.5
+          if dist <= 1.5:
+             destroy(hit)
+             del blocks[(hx,hy)]
+             removed.append((hx,hy))
+   
 
-    if key == "f":
-       tx ,ty = tar_blk_pos()
-       if (tx,ty) not in blocks:
-          e = stone(tx,ty)
-          blocks[(tx,ty)] = e
+    
 
 
 
