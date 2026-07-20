@@ -1,19 +1,31 @@
 from ursina import *
 import random
+import sys, os
+from pathlib import Path 
+
+
+
+base_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+
+window.development_mode = False
+application.asset_folder = Path(base_dir)
 
 app = Ursina()
+
 
 blocks = {}
 created_chucks = set()
 removed = []
 inventory = {}
-blk_in_inven = []
 selblk = 0
 surface = -2
 facing = (0,1)
 velo_y = 0
 g = 20
 jump = 8
+
+
+
 
 blk_tex = {
    'grass': {'tex' : 'tex/grass.png','slt' : 'tex/hgrass.png'},
@@ -29,10 +41,14 @@ blk_tex = {
    'emerald':{'tex':'tex/emerald_ore.jpg','slt':'tex/hemerald_ore.png'}
 }
 
+for name in blk_tex:
+    blk_tex[name]['tex'] = load_texture(blk_tex[name]['tex'])
+    blk_tex[name]['slt'] = load_texture(blk_tex[name]['slt'])
+
 Player = Entity(
     model="quad",
-    color=color.red, 
-    scale=(1,2),
+   texture=load_texture('tex/up.png'), 
+    scale=(0.8,1.8),
     collider="box",
     position=(0,2)
 )
@@ -78,7 +94,7 @@ def stone(x,y):
 )
  return e
  
-def adersite(x,y):
+def andesite(x,y):
  pos = (x,y)
  e = Entity(
     model="quad",
@@ -86,7 +102,7 @@ def adersite(x,y):
     collider="box",
     position=pos,
     scale=(1,1),
-    texture= blk_tex['adersite']['tex']
+    texture= blk_tex['andesite']['tex']
 )
  return e
  
@@ -317,18 +333,15 @@ slot10 = Entity(
 slots = [slot1,slot2,slot3,slot4,slot5,slot6,slot7,slot8,slot9,slot10]
 
 def reslots():
+   names = list(inventory.keys())
    for i , slot in enumerate(slots):
-      if i < len(blk_in_inven):
-         slot.texture = blk_tex[blk_in_inven[i]]['slt']
+      if i < len(names):
+         slot.texture = blk_tex[names[i]]['slt']
       else : 
          slot.texture = None
 
 def add_inven(b):
-   if b not in inventory:
-      inventory[b] = 1
-      blk_in_inven.append(b)
-   else:
-      inventory[b] += 1
+   inventory[b] = inventory.get(b,0) + 1
    reslots()
 
 def remove_inven(b):
@@ -336,19 +349,20 @@ def remove_inven(b):
    inventory[b] -= 1
    if inventory[b] <= 0:
       del inventory[b]
-      blk_in_inven.remove(b)
-      selblk = min(selblk , max(len(blk_in_inven)-1,0))
+      selblk = min(selblk , max(len(inventory)-1,0))
    reslots()
 
-blk_func = {'stone' : stone,
-        'adersite' : adersite,
-        'granite' : granite,
-        'coal' : coal,
-        'copper' : copper,
-        'iron' : iron,
-        'redstone' : redstone,
-        'gold' : gold,
-        'emerald' : emerald}
+blk_func = {'grass' : grass ,
+            'dirt' : dirt ,
+            'stone' : stone,
+            'andesite' : andesite,
+            'granite' : granite,
+            'coal' : coal,
+            'copper' : copper,
+            'iron' : iron,
+            'redstone' : redstone,
+            'gold' : gold,
+            'emerald' : emerald}
 p = [70,
      10,
      8.99,
@@ -458,29 +472,29 @@ def input(key):
     move = 5*time.dt
     if held_keys["w"]:
         
-        Player.texture = 'tex/up.png'
+        Player.texture = load_texture('tex/up.png')
         facing = (0,1)
     if held_keys["s"]:
         
-        Player.texture = 'tex/down.png'
+        Player.texture = load_texture('tex/down.png')
         facing = (0,-1)
     if held_keys["d"]:
         if can_move(Vec3(1,0,0),move):
            Player.x += move
-        Player.texture = 'tex/right.png'
+        Player.texture = load_texture('tex/right.png')
         facing = (1,0)
     if held_keys["a"]:
         if can_move(Vec3(-1,0,0), move):
            Player.x -= move
-        Player.texture = 'tex/left.png'
+        Player.texture = load_texture('tex/left.png')
         facing = (-1,0)
 
-    if key == "scroll up" and len(blk_in_inven):
-       selblk = (selblk+1)% len(blk_in_inven)
+    if key == "scroll up" and len(inventory):
+       selblk = (selblk+1)% len(inventory)
        reslots()
        
-    if key == "scroll down" and len(blk_in_inven):
-       selblk = (selblk-1)% len(blk_in_inven)
+    if key == "scroll down" and len(inventory):
+       selblk = (selblk-1)% len(inventory)
        reslots()
 
     if key == "space":
@@ -504,9 +518,11 @@ def input(key):
        
 
     if key == "right mouse down":
-       if not blk_in_inven:
+      
+       if not inventory:
           return
        hit = mouse.hovered_entity
+       
        if hit and hasattr(hit,"grid_pos") and hit is not Player:
           hx , hy = hit.grid_pos
           cx , cy = mouse.world_point.x , mouse.world_point.y
@@ -516,8 +532,9 @@ def input(key):
           else :
              new_pos = (hx, hy+ (1 if dy > 0 else -1))
           dist = ((new_pos[0]-Player.x)**2 + (new_pos[1] - Player.y)**2)**0.5
-          if dist <= 1.7 and new_pos not in blocks:
-             name = blk_in_inven[selblk]
+         
+          if dist <= 2.2 and new_pos not in blocks:
+             name = list(inventory.keys())[selblk]
              e = blk_func[name](*new_pos)
              e.block = name
              e.grid_pos = new_pos
@@ -525,6 +542,7 @@ def input(key):
              if new_pos in removed:
                 removed.remove(new_pos)
              remove_inven(name)
+      
 
 
 reslots()
