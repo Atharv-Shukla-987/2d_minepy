@@ -316,15 +316,39 @@ slot10 = Entity(
 
 slots = [slot1,slot2,slot3,slot4,slot5,slot6,slot7,slot8,slot9,slot10]
 
-blks = [stone,
-        adersite,
-        granite,
-        coal,
-        copper,
-        iron,
-        redstone,
-        gold,
-        emerald]
+def reslots():
+   for i , slot in enumerate(slots):
+      if i < len(blk_in_inven):
+         slot.texture = blk_tex[blk_in_inven[i]]['slt']
+      else : 
+         slot.texture = None
+
+def add_inven(b):
+   if b not in inventory:
+      inventory[b] = 1
+      blk_in_inven.append(b)
+   else:
+      inventory[b] += 1
+   reslots()
+
+def remove_inven(b):
+   global selblk
+   inventory[b] -= 1
+   if inventory[b] <= 0:
+      del inventory[b]
+      blk_in_inven.remove(b)
+      selblk = min(selblk , max(len(blk_in_inven)-1,0))
+   reslots()
+
+blk_func = {'stone' : stone,
+        'adersite' : adersite,
+        'granite' : granite,
+        'coal' : coal,
+        'copper' : copper,
+        'iron' : iron,
+        'redstone' : redstone,
+        'gold' : gold,
+        'emerald' : emerald}
 p = [70,
      10,
      8.99,
@@ -356,14 +380,16 @@ def chuck(x,y):
             if (__x,__y) not in blocks:
                if __y == surface+2 :
                   e = grass(__x,__y)
-                  blocks[(__x,__y)] = e
+                  e.block = 'grass'
                elif (__y == surface) or ( __y == surface+1):
                   e = dirt(__x,__y)
-                  blocks[(__x,__y)] = e
+                  e.block = 'dirt'
                else:
-                  e = random.choices(blks,weights=p,k=1)[0](__x,__y)
-                  blocks[(__x,__y)] = e  
+                  bl = random.choices(list(blk_func.keys())[2:],weights=p,k=1)[0]
+                  e = blk_func[bl](__x,__y)
+                  e.block = bl
                e.grid_pos = (__x,__y)
+               blocks[(__x,__y)] = e
                 
 
 
@@ -428,9 +454,8 @@ def update():
    
 
 def input(key):
-    global facing
+    global facing, selblk
     move = 5*time.dt
-    check = move + 0.25
     if held_keys["w"]:
         
         Player.texture = 'tex/up.png'
@@ -452,15 +477,18 @@ def input(key):
 
     if key == "scroll up" and len(blk_in_inven):
        selblk = (selblk+1)% len(blk_in_inven)
+       reslots()
        
     if key == "scroll down" and len(blk_in_inven):
        selblk = (selblk-1)% len(blk_in_inven)
+       reslots()
 
     if key == "space":
        global velo_y
        grounded = not can_move(Vec3(0,-1,0),0.1)
        if grounded:
           velo_y = jump
+
     if key == "left mouse down":
        hit = mouse.hovered_entity
        if hit and hasattr(hit,"grid_pos") and hit is not Player:
@@ -468,15 +496,38 @@ def input(key):
           dist = ((hx-Player.x)**2 + (hy - Player.y)**2)**0.5
           
           if dist <= 1.7 and (hx,hy) in blocks:
+             n = hit.block
              destroy(hit)
              del blocks[(hx,hy)]
              removed.append((hx,hy))
+             add_inven(n)
        
 
-    
+    if key == "right mouse down":
+       if not blk_in_inven:
+          return
+       hit = mouse.hovered_entity
+       if hit and hasattr(hit,"grid_pos") and hit is not Player:
+          hx , hy = hit.grid_pos
+          cx , cy = mouse.world_point.x , mouse.world_point.y
+          dx , dy = cx-hx,cy-hy
+          if abs(dx) > abs(dy):
+             new_pos = (hx + (1 if dx > 0 else -1),hy) 
+          else :
+             new_pos = (hx, hy+ (1 if dy > 0 else -1))
+          dist = ((new_pos[0]-Player.x)**2 + (new_pos[1] - Player.y)**2)**0.5
+          if dist <= 1.7 and new_pos not in blocks:
+             name = blk_in_inven[selblk]
+             e = blk_func[name](*new_pos)
+             e.block = name
+             e.grid_pos = new_pos
+             blocks[new_pos] = e
+             if new_pos in removed:
+                removed.remove(new_pos)
+             remove_inven(name)
 
 
-
+reslots()
 app.run()
 
 
