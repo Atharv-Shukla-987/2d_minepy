@@ -24,7 +24,10 @@ and make make a cool monument
 jump = space bar
 
 right mouse buttton = block place
+[remember to place block you need to right click at edge of any block because you cannot place block in air ]
+
 left mouse button = block break
+
 
 
 # where to play 
