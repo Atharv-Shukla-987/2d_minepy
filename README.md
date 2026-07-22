@@ -51,8 +51,18 @@ inventory - you can store  blocks you collected and place them when you want to
 # other details 
 
 • Chunk System : 6 x 6 block chunk
+
 • render distance : 24 blocks
 
+
+# features to be added
+1. add crafting system
+2. day/night cycle
+3. enimies and combat system
+4. sound effects
+5. save and load system
+6. improving terrain generation so your computer don't get cooked....
+7. and something else...
 
 # controls 
 WASD - For player movement
